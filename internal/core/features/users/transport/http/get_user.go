@@ -3,8 +3,8 @@ package users_transport_http
 import (
 	"net/http"
 
-	core_http_utils "github.com/stfprod17/todoapp/internal/core/features/users/transport/http/utils"
 	core_logger "github.com/stfprod17/todoapp/internal/core/logger"
+	core_http_request "github.com/stfprod17/todoapp/internal/core/transport/http/request"
 	core_http_response "github.com/stfprod17/todoapp/internal/core/transport/http/response"
 )
 
@@ -15,7 +15,7 @@ func (h *UsersHTTPHandler) GetUser(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseHandler(log, rw)
 
-	userID, err := core_http_utils.GetIntPathValue(r, "id")
+	userID, err := core_http_request.GetIntPathValue(r, "id")
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err,

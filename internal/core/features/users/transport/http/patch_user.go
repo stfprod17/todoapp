@@ -3,11 +3,11 @@ package users_transport_http
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/stfprod17/todoapp/internal/core/domain"
 	core_http_types "github.com/stfprod17/todoapp/internal/core/features/users/transport/http/types"
-	core_http_utils "github.com/stfprod17/todoapp/internal/core/features/users/transport/http/utils"
 	core_logger "github.com/stfprod17/todoapp/internal/core/logger"
 	core_http_request "github.com/stfprod17/todoapp/internal/core/transport/http/request"
 	core_http_response "github.com/stfprod17/todoapp/internal/core/transport/http/response"
@@ -32,21 +32,19 @@ func (r *PatchUserRequest) Validate() error {
 		}
 	}
 
-	if r.PhoneNumber.Set {
-		if r.PhoneNumber.Value != nil {
-			phoneNumberLen := len([]rune(*r.PhoneNumber.Value))
+	if r.PhoneNumber.Set && r.PhoneNumber.Value != nil {
+		phoneNumberLen := len([]rune(*r.PhoneNumber.Value))
 
-			if phoneNumberLen < 10 || phoneNumberLen > 15 {
-				return fmt.Errorf(
-					"`PhoneNumber` must be between 10 and 15 symbols",
-				)
-			}
+		if phoneNumberLen < 10 || phoneNumberLen > 15 {
+			return fmt.Errorf(
+				"`PhoneNumber` must be between 10 and 15 symbols",
+			)
+		}
 
-			if !strings.HasPrefix(*r.PhoneNumber.Value, "+") {
-				return fmt.Errorf(
-					"`PhoneNumber` must start with the `+` symbol",
-				)
-			}
+		if !strings.HasPrefix(*r.PhoneNumber.Value, "+") {
+			return fmt.Errorf(
+				"`PhoneNumber` must start with the `+` symbol",
+			)
 		}
 	}
 
@@ -62,12 +60,13 @@ func (h *UsersHTTPHandler) PatchUser(
 	ctx := r.Context()
 
 	log := core_logger.FromContext(ctx)
+
 	responseHandler := core_http_response.NewHTTPResponseHandler(
 		log,
 		rw,
 	)
 
-	userID, err := core_http_utils.GetIntPathValue(r, "id")
+	userID, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err,

@@ -7,6 +7,8 @@ import (
 	core_errors "github.com/stfprod17/todoapp/internal/core/errors"
 )
 
+var phoneNumberRegex = regexp.MustCompile(`^\+[0-9]+$`)
+
 type User struct {
 	ID      int
 	Version int
@@ -42,28 +44,28 @@ func NewUserUninitialized(
 }
 
 func (u *User) Validate() error {
-	fullNameLength := len([]rune(u.FullName))
-	if fullNameLength < 3 || fullNameLength > 100 {
+	fullNameLen := len([]rune(u.FullName))
+
+	if fullNameLen < 3 || fullNameLen > 100 {
 		return fmt.Errorf(
-			"invalid `Fullname` len: %d: %w",
-			fullNameLength,
+			"invalid `FullName` length: %d: %w",
+			fullNameLen,
 			core_errors.ErrInvalidArgument,
 		)
 	}
 
 	if u.PhoneNumber != nil {
 		phoneNumberLen := len([]rune(*u.PhoneNumber))
+
 		if phoneNumberLen < 10 || phoneNumberLen > 15 {
 			return fmt.Errorf(
-				"invalid `PhoneNumber` len: %d: %w",
+				"invalid `PhoneNumber` length: %d: %w",
 				phoneNumberLen,
 				core_errors.ErrInvalidArgument,
 			)
 		}
 
-		re := regexp.MustCompile(`^\+[0-9]+$`)
-
-		if !re.MatchString(*u.PhoneNumber) {
+		if !phoneNumberRegex.MatchString(*u.PhoneNumber) {
 			return fmt.Errorf(
 				"invalid `PhoneNumber` format: %w",
 				core_errors.ErrInvalidArgument,
@@ -79,6 +81,16 @@ type UserPatch struct {
 	PhoneNumber Nullable[string]
 }
 
+func NewUserPatch(
+	fullName Nullable[string],
+	phoneNumber Nullable[string],
+) UserPatch {
+	return UserPatch{
+		FullName:    fullName,
+		PhoneNumber: phoneNumber,
+	}
+}
+
 func (p *UserPatch) Validate() error {
 	if p.FullName.Set && p.FullName.Value == nil {
 		return fmt.Errorf(
@@ -92,24 +104,30 @@ func (p *UserPatch) Validate() error {
 
 func (u *User) ApplyPatch(patch UserPatch) error {
 	if err := patch.Validate(); err != nil {
-		return fmt.Errorf("validate user patch: %w", err)
+		return fmt.Errorf(
+			"validate user patch: %w",
+			err,
+		)
 	}
 
-	tap := *u
+	patchedUser := *u
 
 	if patch.FullName.Set {
-		tap.FullName = *patch.FullName.Value
+		patchedUser.FullName = *patch.FullName.Value
 	}
 
 	if patch.PhoneNumber.Set {
-		tap.PhoneNumber = patch.PhoneNumber.Value
+		patchedUser.PhoneNumber = patch.PhoneNumber.Value
 	}
 
-	if err := tap.Validate(); err != nil {
-		return fmt.Errorf("validate patched user: %w", err)
+	if err := patchedUser.Validate(); err != nil {
+		return fmt.Errorf(
+			"validate patched user: %w",
+			err,
+		)
 	}
 
-	*u = tap
+	*u = patchedUser
 
 	return nil
 }
