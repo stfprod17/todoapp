@@ -9,6 +9,9 @@ import (
 	"time"
 
 	core_config "github.com/stfprod17/todoapp/internal/core/config"
+	statistics_postgres_repository "github.com/stfprod17/todoapp/internal/core/features/statistics/repository/postgres"
+	statistics_service "github.com/stfprod17/todoapp/internal/core/features/statistics/service"
+	statistics_transport_http "github.com/stfprod17/todoapp/internal/core/features/statistics/transport/http"
 	tasks_postgres_repository "github.com/stfprod17/todoapp/internal/core/features/tasks/repository/postgres"
 	tasks_service "github.com/stfprod17/todoapp/internal/core/features/tasks/service"
 	tasks_transport_http "github.com/stfprod17/todoapp/internal/core/features/tasks/transport/http"
@@ -68,14 +71,8 @@ func main() {
 		zap.String("feature", "users"),
 	)
 
-	usersRepository := users_postgres_repository.NewUsersRepository(
-		pool,
-	)
-
-	usersService := users_service.NewUsersService(
-		usersRepository,
-	)
-
+	usersRepository := users_postgres_repository.NewUsersRepository(pool)
+	usersService := users_service.NewUsersService(usersRepository)
 	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(
 		usersService,
 	)
@@ -85,16 +82,25 @@ func main() {
 		zap.String("feature", "tasks"),
 	)
 
-	tasksRepository := tasks_postgres_repository.NewTasksRepository(
-		pool,
-	)
-
-	tasksService := tasks_service.NewTasksService(
-		tasksRepository,
-	)
-
+	tasksRepository := tasks_postgres_repository.NewTasksRepository(pool)
+	tasksService := tasks_service.NewTasksService(tasksRepository)
 	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(
 		tasksService,
+	)
+
+	logger.Debug(
+		"initializing feature",
+		zap.String("feature", "statistics"),
+	)
+
+	statisticsRepository := statistics_postgres_repository.NewStatisticsRepository(
+		pool,
+	)
+	statisticsService := statistics_service.NewStatisticsService(
+		statisticsRepository,
+	)
+	statisticsTransportHTTP := statistics_transport_http.NewStatisticsHTTPHandler(
+		statisticsService,
 	)
 
 	logger.Debug("initializing HTTP server")
@@ -118,6 +124,10 @@ func main() {
 
 	apiVersionRouter.RegisterRoutes(
 		tasksTransportHTTP.Routes()...,
+	)
+
+	apiVersionRouter.RegisterRoutes(
+		statisticsTransportHTTP.Routes()...,
 	)
 
 	httpServer.RegisterAPIRouters(
