@@ -15,12 +15,19 @@ func (r *UsersRepository) CreateUser(
 	defer cancel()
 
 	query := `
-	INSERT INTO todoapp.users (full_name, phone_number)
-	VALUES ($1, $2)
-	RETURNING id, version, full_name, phone_number;
+	INSERT INTO todoapp.users (full_name, phone_number, email, password_hash)
+    VALUES ($1, $2, $3, $4)
+    RETURNING id, version, full_name, phone_number, email, password_hash;
 	`
 
-	row := r.pool.QueryRow(ctx, query, user.FullName, user.PhoneNumber)
+	row := r.pool.QueryRow(
+		ctx,
+		query,
+		user.FullName,
+		user.PhoneNumber,
+		user.Email,
+		user.PasswordHash,
+	)
 
 	var userModel UserModel
 	err := row.Scan(
@@ -28,6 +35,8 @@ func (r *UsersRepository) CreateUser(
 		&userModel.Version,
 		&userModel.FullName,
 		&userModel.PhoneNumber,
+		&userModel.Email,
+		&userModel.PasswordHash,
 	)
 
 	if err != nil {
@@ -39,6 +48,8 @@ func (r *UsersRepository) CreateUser(
 		userModel.Version,
 		userModel.FullName,
 		userModel.PhoneNumber,
+		userModel.Email,
+		userModel.PasswordHash,
 	)
 
 	return userDomain, nil

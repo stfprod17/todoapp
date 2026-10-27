@@ -17,6 +17,10 @@ func (s *TasksService) PatchTask(
 		return domain.Task{}, fmt.Errorf("get task: %w", err)
 	}
 
+	if err := ensureTaskOwner(ctx, task); err != nil {
+		return domain.Task{}, err
+	}
+
 	if err := task.ApplyPatch(patch); err != nil {
 		return domain.Task{}, fmt.Errorf("apply task patch: %w", err)
 	}

@@ -21,15 +21,15 @@ func (r *UsersRepository) PatchUser(
 	query := `
 		UPDATE todoapp.users
 		SET
-			full_name=$1
-			phone_number=$2
+			full_name=$1,
+			phone_number=$2,
 			version=version+1
 		WHERE id=$3	AND version=$4
 		RETURNING
 			id,
 			version,
 			full_name,
-			phone_number;
+			phone_number, email, password_hash;
 			`
 	row := r.pool.QueryRow(
 		ctx,
@@ -46,7 +46,7 @@ func (r *UsersRepository) PatchUser(
 		&userModel.Version,
 		&userModel.FullName,
 		&userModel.PhoneNumber,
-	)
+		&userModel.Email, &userModel.PasswordHash)
 
 	if err != nil {
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {
@@ -66,7 +66,7 @@ func (r *UsersRepository) PatchUser(
 		userModel.Version,
 		userModel.FullName,
 		userModel.PhoneNumber,
-	)
+		userModel.Email, userModel.PasswordHash)
 
 	return userDomain, nil
 }

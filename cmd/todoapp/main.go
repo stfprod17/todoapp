@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	core_auth "github.com/stfprod17/todoapp/internal/core/auth"
 	core_config "github.com/stfprod17/todoapp/internal/core/config"
 	statistics_postgres_repository "github.com/stfprod17/todoapp/internal/core/features/statistics/repository/postgres"
 	statistics_service "github.com/stfprod17/todoapp/internal/core/features/statistics/service"
@@ -73,8 +74,15 @@ func main() {
 
 	usersRepository := users_postgres_repository.NewUsersRepository(pool)
 	usersService := users_service.NewUsersService(usersRepository)
+
+	tokenManager, err := core_auth.NewTokenManager(os.Getenv("JWT_SECRET"))
+	if err != nil {
+		logger.Fatal("failed to init token manager", zap.Error(err))
+	}
+
 	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(
 		usersService,
+		tokenManager,
 	)
 
 	logger.Debug(
@@ -86,6 +94,7 @@ func main() {
 	tasksService := tasks_service.NewTasksService(tasksRepository)
 	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(
 		tasksService,
+		tokenManager,
 	)
 
 	logger.Debug(
@@ -101,6 +110,7 @@ func main() {
 	)
 	statisticsTransportHTTP := statistics_transport_http.NewStatisticsHTTPHandler(
 		statisticsService,
+		tokenManager,
 	)
 
 	logger.Debug("initializing HTTP server")
@@ -108,6 +118,7 @@ func main() {
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),
 		logger,
+		core_http_middleware.CORS(),
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
 		core_http_middleware.Trace(),

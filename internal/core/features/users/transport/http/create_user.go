@@ -11,6 +11,8 @@ import (
 
 type CreateUserRequest struct {
 	FullName    string  `json:"full_name" 		validate:"required,min=3,max=100"`
+	Email       string  `json:"email" validate:"required,email,max=255"`
+	Password    string  `json:"password" validate:"required,min=8,max=72"`
 	PhoneNumber *string `json:"phone_number" 	validate:"omitempty,min=10,max=15,startswith=+"`
 }
 
@@ -31,7 +33,7 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 
 	userDomain := domainFromDTO(request)
 
-	userDomain, err := h.usersService.CreateUser(ctx, userDomain)
+	userDomain, err := h.usersService.CreateUser(ctx, userDomain, request.Password)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to create user")
 
@@ -47,5 +49,7 @@ func domainFromDTO(dto CreateUserRequest) domain.User {
 	return domain.NewUserUninitialized(
 		dto.FullName,
 		dto.PhoneNumber,
+		dto.Email,
+		"",
 	)
 }

@@ -35,6 +35,7 @@ func NewTask(
 		Title:        title,
 		Description:  description,
 		Completed:    completed,
+		CreatedAt:    createdAt,
 		CompletedAt:  completedAt,
 		AuthorUserID: authorUserID,
 	}

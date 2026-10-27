@@ -13,8 +13,10 @@ type User struct {
 	ID      int
 	Version int
 
-	FullName    string
-	PhoneNumber *string
+	FullName     string
+	PhoneNumber  *string
+	Email        string
+	PasswordHash string
 }
 
 func NewUser(
@@ -22,24 +24,32 @@ func NewUser(
 	version int,
 	fullName string,
 	phoneNumber *string,
+	email string,
+	passwordHash string,
 ) User {
 	return User{
-		ID:          id,
-		Version:     version,
-		FullName:    fullName,
-		PhoneNumber: phoneNumber,
+		ID:           id,
+		Version:      version,
+		FullName:     fullName,
+		PhoneNumber:  phoneNumber,
+		Email:        email,
+		PasswordHash: passwordHash,
 	}
 }
 
 func NewUserUninitialized(
 	fullName string,
 	phoneNumber *string,
+	email string,
+	passwordHash string,
 ) User {
 	return NewUser(
 		UninitializedID,
 		UninitializedVersion,
 		fullName,
 		phoneNumber,
+		email,
+		passwordHash,
 	)
 }
 
