@@ -16,6 +16,8 @@ type UserRepository interface {
 		user domain.User,
 	) (domain.User, error)
 
+	GetUserByEmail(ctx context.Context, email string) (domain.User, error)
+
 	GetUsers(
 		ctx context.Context,
 		limit *int,

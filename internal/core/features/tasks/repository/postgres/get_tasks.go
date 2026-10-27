@@ -62,7 +62,7 @@ func (r *TasksRepository) GetTasks(
 		)
 
 		if err != nil {
-			return nil, fmt.Errorf("scan tasks: %w", &err)
+			return nil, fmt.Errorf("scan tasks: %w", err)
 		}
 
 		tasksModels = append(tasksModels, taskModel)

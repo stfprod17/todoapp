@@ -16,5 +16,9 @@ func (s *TasksService) GetTask(
 		return domain.Task{}, fmt.Errorf("get task from repository: %w", err)
 	}
 
+	if err := ensureTaskOwner(ctx, task); err != nil {
+		return domain.Task{}, err
+	}
+
 	return task, nil
 }

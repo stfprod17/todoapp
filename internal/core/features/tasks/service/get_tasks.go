@@ -27,6 +27,13 @@ func (s *TasksService) GetTasks(
 		)
 	}
 
+	currentID, err := currentUserID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get current user: %w", err)
+	}
+
+	userID = &currentID
+
 	tasks, err := s.tasksRepository.GetTasks(ctx, userID, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("get tasks from repository: %w", err)
